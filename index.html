@@ -145,46 +145,85 @@
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#0f172a'); }
 
-    async function init() {
-      try {
-        const res = await fetch(API_URL);
-        appData = await res.json();
-        
-        populate("spool", appData.spools, s => `<option value="${s.id}" data-cost="${s.costPerGram}">${s.id} - ${s.color} [${Math.round(s.remaining)}g]</option>`);
-        populate("hw", appData.hardware, h => `<option value="${h.id}" data-cost="${h.costPerUnit}">${h.name} [${h.remaining} left]</option>`);
-        populate("printer", appData.printers, p => `<option value="${p.id}" data-depr="${p.deprRate}">${p.model}</option>`);
-        
-        // Render Spools
-        document.getElementById("spool-list").innerHTML = appData.spools.map(s => 
-          `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-            <div><div class="font-bold text-sm text-white">${s.id}</div><div class="text-[10px] text-slate-400">${s.brand} ${s.color}</div></div>
-            <div class="flex items-center gap-3">
-              <div class="font-bold ${s.remaining < 150 ? 'text-red-400' : 'text-green-400'}">${Math.round(s.remaining)}g</div>
-              <button onclick="deleteInventory('spool', '${s.id}')" class="text-red-400 text-lg active:scale-90">✖</button>
-            </div>
-          </div>`).join("");
+  async function init() {
+  const loadingEl = document.getElementById("loading");
+  try {
+    // 12-second timeout controller so it never hangs indefinitely
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-        // Render Hardware
-        document.getElementById("hw-list").innerHTML = appData.hardware.map(h => 
-          `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-            <div><div class="font-bold text-sm text-white">${h.id}</div><div class="text-[10px] text-slate-400">${h.name}</div></div>
-            <div class="flex items-center gap-3">
-              <div class="font-bold text-blue-400">${h.remaining} left</div>
-              <button onclick="deleteInventory('hardware', '${s.id || h.id}')" class="text-red-400 text-lg active:scale-90">✖</button>
-            </div>
-          </div>`).join("");
+    const res = await fetch(API_URL, {
+      method: "GET",
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
 
-        // Render History
-        document.getElementById("history-list").innerHTML = appData.recentJobs.map(j => 
-          `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-            <div><div class="font-bold text-sm text-white">${j.item}</div><div class="text-[10px] text-slate-400">${new Date(j.date).toLocaleDateString()} • Inflow: ₱${j.inflow}</div></div>
-            <button onclick="deleteLog('${j.logId}')" class="text-red-400 p-2 text-lg active:scale-90">✖</button>
-          </div>`).join("");
-
-        document.getElementById("loading").classList.add("hidden");
-        document.getElementById("app-content").classList.remove("hidden");
-      } catch (err) { document.getElementById("loading").innerText = "Connection error."; }
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Check Web App permissions`);
     }
+
+    appData = await res.json();
+    if (appData.status === "error") {
+      throw new Error("Apps Script Error: " + appData.message);
+    }
+
+    // Save local backup so it opens instantly next time
+    localStorage.setItem("bossing_cache", JSON.stringify(appData));
+    renderApp(appData);
+
+  } catch (err) {
+    console.error(err);
+    // Fall back to cached data if network failed
+    const cached = localStorage.getItem("bossing_cache");
+    if (cached) {
+      appData = JSON.parse(cached);
+      renderApp(appData);
+      loadingEl.innerHTML = `<span class="text-amber-400 text-xs">⚠️ Offline Mode (Showing cached stock). Error: ${err.message}</span>`;
+      setTimeout(() => loadingEl.classList.add("hidden"), 3000);
+    } else {
+      loadingEl.innerHTML = `
+        <div class="p-3 bg-red-950/60 border border-red-700 rounded-xl text-left text-xs text-red-200">
+          <p class="font-bold mb-1">Failed to Connect:</p>
+          <p class="font-mono text-[11px] break-all">${err.message}</p>
+          <button onclick="init()" class="mt-3 px-3 py-1 bg-red-800 text-white rounded font-semibold">Retry</button>
+        </div>
+      `;
+    }
+  }
+}
+
+function renderApp(data) {
+  populate("spool", data.spools, s => `<option value="${s.id}" data-cost="${s.costPerGram}">${s.id} - ${s.color} [${Math.round(s.remaining)}g]</option>`);
+  populate("hw", data.hardware, h => `<option value="${h.id}" data-cost="${h.costPerUnit}">${h.name} [${h.remaining} left]</option>`);
+  populate("printer", data.printers, p => `<option value="${p.id}" data-depr="${p.deprRate}">${p.model}</option>`);
+
+  document.getElementById("spool-list").innerHTML = data.spools.map(s => 
+    `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+      <div><div class="font-bold text-sm text-white">${s.id}</div><div class="text-[10px] text-slate-400">${s.brand} ${s.color}</div></div>
+      <div class="flex items-center gap-3">
+        <div class="font-bold ${s.remaining < 150 ? 'text-red-400' : 'text-green-400'}">${Math.round(s.remaining)}g</div>
+        <button onclick="deleteInventory('spool', '${s.id}')" class="text-red-400 text-lg active:scale-90">✖</button>
+      </div>
+    </div>`).join("");
+
+  document.getElementById("hw-list").innerHTML = data.hardware.map(h => 
+    `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+      <div><div class="font-bold text-sm text-white">${h.id}</div><div class="text-[10px] text-slate-400">${h.name}</div></div>
+      <div class="flex items-center gap-3">
+        <div class="font-bold text-blue-400">${h.remaining} left</div>
+        <button onclick="deleteInventory('hardware', '${h.id}')" class="text-red-400 text-lg active:scale-90">✖</button>
+      </div>
+    </div>`).join("");
+
+  document.getElementById("history-list").innerHTML = data.recentJobs.map(j => 
+    `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+      <div><div class="font-bold text-sm text-white">${j.item}</div><div class="text-[10px] text-slate-400">${new Date(j.date).toLocaleDateString()} • Inflow: ₱${j.inflow}</div></div>
+      <button onclick="deleteLog('${j.logId}')" class="text-red-400 p-2 text-lg active:scale-90">✖</button>
+    </div>`).join("");
+
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("app-content").classList.remove("hidden");
+}
 
     function populate(prefix, items, tmpl) {
       const opts = `<option value="">-- None --</option>` + items.map(tmpl).join("");
