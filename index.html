@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bossing 3D Prints Manager</title>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body {
+      background-color: var(--tg-theme-bg-color, #0f172a);
+      color: var(--tg-theme-text-color, #f8fafc);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    input, select {
+      background-color: var(--tg-theme-secondary-bg-color, #1e293b);
+      color: var(--tg-theme-text-color, #ffffff);
+      border-color: #334155;
+    }
+  </style>
+</head>
+<body class="p-3 pb-20 select-none">
+
+  <!-- Header -->
+  <div class="mb-4 text-center">
+    <h1 class="text-xl font-extrabold text-blue-500 uppercase tracking-widest">Bossing 3D</h1>
+    <p class="text-xs text-slate-400">Print Farm Manager</p>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading" class="text-center py-10 text-slate-400 animate-pulse">
+    Syncing with Google Sheets...
+  </div>
+
+  <!-- Main App Form (Hidden until loaded) -->
+  <div id="app-content" class="hidden space-y-4">
+    
+    <!-- General Details -->
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-3">
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Job Details</h2>
+      
+      <div>
+        <label class="block text-xs text-slate-300 mb-1">Item Name</label>
+        <input type="text" id="itemName" placeholder="e.g. Dual Color Switch Tester" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">Job Type</label>
+          <select id="jobType" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+            <option value="Commercial">Commercial (Paid)</option>
+            <option value="Personal / Giveaway">Personal / Giveaway</option>
+            <option value="Failed / Reject">Failed / Reject</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">Printer Used</label>
+          <select id="printerId" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"></select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">Print Hours</label>
+          <input type="number" id="printHours" step="0.1" placeholder="e.g. 2.5" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">Cash Inflow (₱)</label>
+          <input type="number" id="cashInflow" placeholder="e.g. 350" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- Filaments Section -->
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Filaments Used</h2>
+      
+      <!-- Spool Row 1 -->
+      <div class="flex gap-2">
+        <select id="spool1" class="flex-1 border rounded-lg px-2 py-2 text-xs focus:outline-none"></select>
+        <input type="number" id="g1" placeholder="Grams" class="w-20 border rounded-lg px-2 py-2 text-xs text-center focus:outline-none">
+      </div>
+      <!-- Spool Row 2 -->
+      <div class="flex gap-2">
+        <select id="spool2" class="flex-1 border rounded-lg px-2 py-2 text-xs focus:outline-none"></select>
+        <input type="number" id="g2" placeholder="Grams" class="w-20 border rounded-lg px-2 py-2 text-xs text-center focus:outline-none">
+      </div>
+      <!-- Spool Row 3 -->
+      <div class="flex gap-2">
+        <select id="spool3" class="flex-1 border rounded-lg px-2 py-2 text-xs focus:outline-none"></select>
+        <input type="number" id="g3" placeholder="Grams" class="w-20 border rounded-lg px-2 py-2 text-xs text-center focus:outline-none">
+      </div>
+    </div>
+
+    <!-- Add-ons Section -->
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hardware / Add-ons</h2>
+      
+      <!-- HW Row 1 -->
+      <div class="flex gap-2">
+        <select id="hw1" class="flex-1 border rounded-lg px-2 py-2 text-xs focus:outline-none"></select>
+        <input type="number" id="qty1" placeholder="Qty" class="w-20 border rounded-lg px-2 py-2 text-xs text-center focus:outline-none">
+      </div>
+      <!-- HW Row 2 -->
+      <div class="flex gap-2">
+        <select id="hw2" class="flex-1 border rounded-lg px-2 py-2 text-xs focus:outline-none"></select>
+        <input type="number" id="qty2" placeholder="Qty" class="w-20 border rounded-lg px-2 py-2 text-xs text-center focus:outline-none">
+      </div>
+    </div>
+
+    <!-- Receipt Upload -->
+    <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-3">
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Proof of Payment / Receipt</h2>
+      
+      <!-- Camera Button -->
+      <label class="flex items-center justify-center w-full h-12 bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer transition border border-slate-600 border-dashed">
+        <span class="text-sm font-medium text-blue-400 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Snap Receipt
+        </span>
+        <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
+      </label>
+      
+      <!-- Image Preview -->
+      <div id="imagePreviewContainer" class="hidden relative mt-2 rounded-lg overflow-hidden border border-slate-700">
+        <img id="imagePreview" class="w-full h-32 object-cover">
+        <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-600/80 text-white p-1 rounded">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button id="submitBtn" onclick="submitJob()" class="w-full py-4 mt-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-lg font-bold rounded-xl transition shadow-lg shadow-blue-600/30">
+      Log Job & Deduct Stock
+    </button>
+
+  </div>
+
+  <script>
+    // ⚠️ REPLACE THIS WITH YOUR NEW GOOGLE APPS SCRIPT WEB APP URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbyEVcZfVvYnBXX8Kbkhri9Ks_UNsqwRn9Gaqih22xsv-Snv3PAkhAo7ej0DKQXmJTFv/exec";
+    
+    let base64Image = null;
+    let imageMimeType = null;
+    
+    // Initialize Telegram SDK
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.setHeaderColor('#0f172a');
+    }
+
+    // Fetch live inventory on load
+    async function init() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        
+        populateDropdowns("spool", data.spools, (s) => `<option value="${s.id}">${s.id} - ${s.color} ${s.material} [${Math.round(s.remaining)}g]</option>`);
+        populateDropdowns("hw", data.hardware, (h) => `<option value="${h.id}">${h.name} [${h.remaining} left]</option>`);
+        
+        const printerSelect = document.getElementById("printerId");
+        printerSelect.innerHTML = data.printers.map(p => `<option value="${p.id}">${p.model}</option>`).join("");
+        
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("app-content").classList.remove("hidden");
+      } catch (err) {
+        document.getElementById("loading").innerText = "Error connecting to Google Sheets. Please check API URL.";
+      }
+    }
+
+    function populateDropdowns(prefix, items, templateFn) {
+      const options = `<option value="">-- None --</option>` + items.map(templateFn).join("");
+      for (let i = 1; i <= 3; i++) {
+        const el = document.getElementById(prefix + i);
+        if (el) el.innerHTML = options;
+      }
+    }
+
+    // Handle Image Upload & Resize (compress to avoid GAS timeout)
+    function handleImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Resize to max 800px width to keep upload speed instant
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          base64Image = canvas.toDataURL('image/jpeg', 0.7); // 70% quality JPEG
+          imageMimeType = 'image/jpeg';
+          
+          const previewContainer = document.getElementById('imagePreviewContainer');
+          const previewImg = document.getElementById('imagePreview');
+          previewImg.src = base64Image;
+          previewContainer.classList.remove('hidden');
+        }
+        img.src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+      document.getElementById('receiptInput').value = "";
+      document.getElementById('imagePreviewContainer').classList.add('hidden');
+      base64Image = null;
+      imageMimeType = null;
+    }
+
+    // Auto-set cash inflow to 0 if Personal/Reject
+    document.getElementById('jobType').addEventListener('change', function(e) {
+      const cashInput = document.getElementById('cashInflow');
+      if (e.target.value !== 'Commercial') {
+        cashInput.value = "0";
+      } else {
+        cashInput.value = "";
+      }
+    });
+
+    // Submit payload to Google Apps Script
+    async function submitJob() {
+      const btn = document.getElementById("submitBtn");
+      const originalText = btn.innerText;
+
+      // Validate core fields
+      const itemName = document.getElementById('itemName').value.trim();
+      const spool1 = document.getElementById('spool1').value;
+      if (!itemName || !spool1) {
+        tg?.showAlert ? tg.showAlert("Item Name and at least Spool 1 are required.") : alert("Item Name and at least Spool 1 are required.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Uploading & Saving...";
+      btn.classList.add("opacity-70");
+
+      const payload = {
+        action: "logPrint",
+        itemName: itemName,
+        jobType: document.getElementById('jobType').value,
+        printerId: document.getElementById('printerId').value,
+        printHours: document.getElementById('printHours').value,
+        cashInflow: document.getElementById('cashInflow').value,
+        spool1: document.getElementById('spool1').value,
+        g1: document.getElementById('g1').value,
+        spool2: document.getElementById('spool2').value,
+        g2: document.getElementById('g2').value,
+        spool3: document.getElementById('spool3').value,
+        g3: document.getElementById('g3').value,
+        hw1: document.getElementById('hw1').value,
+        qty1: document.getElementById('qty1').value,
+        hw2: document.getElementById('hw2').value,
+        qty2: document.getElementById('qty2').value,
+        receiptBase64: base64Image,
+        receiptMimeType: imageMimeType
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        
+        if (result.status === "success") {
+          tg?.HapticFeedback?.notificationOccurred('success');
+          // Clear form and close app (or reload)
+          if (tg) tg.close();
+          else location.reload();
+        } else {
+          throw new Error(result.message);
+        }
+      } catch (err) {
+        tg?.showAlert ? tg.showAlert("Error: " + err.message) : alert("Error: " + err.message);
+        btn.disabled = false;
+        btn.innerText = originalText;
+        btn.classList.remove("opacity-70");
+      }
+    }
+
+    // Run on startup
+    init();
+  </script>
+</body>
+</html>
