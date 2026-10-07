@@ -4,150 +4,82 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Bossing 3D Hub</title>
-  
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <style>
-    body { 
-      background-color: var(--tg-theme-bg-color, #0f172a); 
-      color: var(--tg-theme-text-color, #f8fafc); 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    }
-    input, select { 
-      background-color: var(--tg-theme-secondary-bg-color, #1e293b); 
-      color: var(--tg-theme-text-color, #ffffff); 
-      border-color: #334155; 
-    }
+    body { background-color: var(--tg-theme-bg-color, #0f172a); color: var(--tg-theme-text-color, #f8fafc); font-family: -apple-system, sans-serif; }
+    input, select { background-color: var(--tg-theme-secondary-bg-color, #1e293b); color: var(--tg-theme-text-color, #ffffff); border-color: #334155; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    /* Hide scrollbar for cleaner look */
+    ::-webkit-scrollbar { width: 0px; background: transparent; }
   </style>
 </head>
 <body class="p-3 pb-24 select-none">
 
-  <!-- Header -->
   <div class="mb-4 text-center">
     <h1 class="text-xl font-extrabold text-blue-500 uppercase tracking-widest">Bossing 3D</h1>
-    <p class="text-xs text-slate-400">Print Farm Manager</p>
   </div>
 
-  <!-- Loading State -->
-  <div id="loading" class="text-center py-10 text-slate-400 animate-pulse">
-    Syncing with Google Sheets...
-  </div>
+  <div id="loading" class="text-center py-10 text-slate-400 animate-pulse">Syncing with Google Sheets...</div>
 
-  <!-- VIEWS -->
   <div id="app-content" class="hidden">
     
     <!-- TAB 1: LOG JOB -->
     <div id="view-log" class="tab-content active space-y-4">
-      
-      <!-- General Details -->
       <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
-        <label class="block text-xs text-slate-300">Item Name</label>
-        <input type="text" id="itemName" placeholder="e.g. Phone Stand" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-        
+        <input type="text" id="itemName" placeholder="Item Name (e.g. Phone Stand)" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
         <div class="grid grid-cols-2 gap-2 mt-2">
-          <select id="jobType" class="border rounded-lg px-2 py-2 text-xs">
-            <option value="Commercial">Commercial</option>
-            <option value="Personal / Giveaway">Giveaway</option>
-            <option value="Failed / Reject">Failed</option>
-          </select>
+          <select id="jobType" class="border rounded-lg px-2 py-2 text-xs"><option value="Commercial">Commercial</option><option value="Personal / Giveaway">Giveaway</option><option value="Failed / Reject">Failed</option></select>
           <select id="printerId" class="border rounded-lg px-2 py-2 text-xs"></select>
         </div>
-        
         <div class="grid grid-cols-2 gap-2">
-          <input type="number" id="printHours" step="0.1" placeholder="Hours (e.g. 2.5)" class="border rounded-lg px-2 py-2 text-xs">
+          <input type="number" id="printHours" step="0.1" placeholder="Hours" class="border rounded-lg px-2 py-2 text-xs">
           <input type="number" id="cashInflow" placeholder="Inflow (₱)" class="border rounded-lg px-2 py-2 text-xs">
         </div>
       </div>
 
-      <!-- Filaments Section -->
       <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Filaments Used</h2>
-        <div class="flex gap-2">
-          <select id="spool1" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select>
-          <input type="number" id="g1" placeholder="g" class="w-20 border rounded-lg px-2 py-2 text-xs text-center">
-        </div>
-        <div class="flex gap-2">
-          <select id="spool2" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select>
-          <input type="number" id="g2" placeholder="g" class="w-20 border rounded-lg px-2 py-2 text-xs text-center">
-        </div>
-        <div class="flex gap-2">
-          <select id="spool3" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select>
-          <input type="number" id="g3" placeholder="g" class="w-20 border rounded-lg px-2 py-2 text-xs text-center">
-        </div>
+        <h2 class="text-xs font-bold text-slate-400 uppercase">Filaments</h2>
+        <div class="flex gap-2"><select id="spool1" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select><input type="number" id="g1" placeholder="g" class="w-16 border rounded-lg px-2 py-2 text-xs text-center"></div>
+        <div class="flex gap-2"><select id="spool2" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select><input type="number" id="g2" placeholder="g" class="w-16 border rounded-lg px-2 py-2 text-xs text-center"></div>
+        <div class="flex gap-2"><select id="spool3" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select><input type="number" id="g3" placeholder="g" class="w-16 border rounded-lg px-2 py-2 text-xs text-center"></div>
       </div>
 
-      <!-- Add-ons Section -->
       <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hardware / Add-ons</h2>
-        <div class="flex gap-2">
-          <select id="hw1" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select>
-          <input type="number" id="qty1" placeholder="Qty" class="w-20 border rounded-lg px-2 py-2 text-xs text-center">
-        </div>
-        <div class="flex gap-2">
-          <select id="hw2" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select>
-          <input type="number" id="qty2" placeholder="Qty" class="w-20 border rounded-lg px-2 py-2 text-xs text-center">
-        </div>
+        <h2 class="text-xs font-bold text-slate-400 uppercase">Hardware</h2>
+        <div class="flex gap-2"><select id="hw1" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select><input type="number" id="qty1" placeholder="Qty" class="w-16 border rounded-lg px-2 py-2 text-xs text-center"></div>
+        <div class="flex gap-2"><select id="hw2" class="flex-1 border rounded-lg px-2 py-2 text-xs"></select><input type="number" id="qty2" placeholder="Qty" class="w-16 border rounded-lg px-2 py-2 text-xs text-center"></div>
       </div>
 
-      <!-- Receipt Upload -->
       <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
-        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Proof of Payment / Receipt</h2>
-        <label class="flex items-center justify-center w-full h-12 bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer transition border border-slate-600 border-dashed">
-          <span class="text-sm font-medium text-blue-400 flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            Snap Receipt
-          </span>
+        <label class="flex items-center justify-center w-full h-12 bg-slate-700 hover:bg-slate-600 rounded-lg cursor-pointer border border-slate-600 border-dashed">
+          <span class="text-sm font-medium text-blue-400">📷 Snap Receipt</span>
           <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="handleImage(event)">
         </label>
-        <!-- Image Preview -->
         <div id="imagePreviewContainer" class="hidden relative mt-2 rounded-lg overflow-hidden border border-slate-700">
           <img id="imagePreview" class="w-full h-32 object-cover">
-          <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-600/80 text-white p-1 rounded">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
+          <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-600/80 text-white p-1 rounded">✖</button>
         </div>
       </div>
 
-      <button onclick="submitJob()" id="submitBtn" class="w-full py-4 bg-blue-600 text-white text-lg font-bold rounded-xl active:scale-95 transition shadow-lg shadow-blue-600/30">
-        Log Job & Deduct Stock
-      </button>
+      <button onclick="submitJob()" id="submitBtn" class="w-full py-4 bg-blue-600 text-white text-lg font-bold rounded-xl active:scale-95 transition shadow-lg shadow-blue-600/30">Log Job & Deduct</button>
     </div>
 
     <!-- TAB 2: CALCULATOR -->
     <div id="view-calc" class="tab-content space-y-4">
       <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
         <h2 class="text-sm font-bold text-blue-400 uppercase">Cost Estimator</h2>
-        <div class="grid grid-cols-2 gap-2">
-          <select id="calc-printer" class="border rounded-lg px-2 py-2 text-xs" onchange="runCalc()"></select>
-          <input type="number" id="calc-hours" placeholder="Hours" class="border rounded-lg px-2 py-2 text-xs" oninput="runCalc()">
-        </div>
-        <div class="flex gap-2">
-          <select id="calc-spool" class="flex-1 border rounded-lg px-2 py-2 text-xs" onchange="runCalc()"></select>
-          <input type="number" id="calc-g" placeholder="Grams" class="w-20 border rounded-lg px-2 py-2 text-xs" oninput="runCalc()">
-        </div>
-        <div class="flex gap-2">
-          <select id="calc-hw" class="flex-1 border rounded-lg px-2 py-2 text-xs" onchange="runCalc()"></select>
-          <input type="number" id="calc-qty" placeholder="Qty" class="w-20 border rounded-lg px-2 py-2 text-xs" oninput="runCalc()">
-        </div>
-        
-        <div class="border-t border-slate-700 pt-3 mt-3">
-          <div class="flex justify-between text-sm text-slate-300"><span>Production Cost:</span> <span id="calc-cost" class="font-bold text-white">₱0.00</span></div>
-        </div>
-        
+        <div class="grid grid-cols-2 gap-2"><select id="calc-printer" class="border rounded-lg px-2 py-2 text-xs" onchange="runCalc()"></select><input type="number" id="calc-hours" placeholder="Hours" class="border rounded-lg px-2 py-2 text-xs" oninput="runCalc()"></div>
+        <div class="flex gap-2"><select id="calc-spool" class="flex-1 border rounded-lg px-2 py-2 text-xs" onchange="runCalc()"></select><input type="number" id="calc-g" placeholder="Grams" class="w-20 border rounded-lg px-2 py-2 text-xs" oninput="runCalc()"></div>
+        <div class="flex gap-2"><select id="calc-hw" class="flex-1 border rounded-lg px-2 py-2 text-xs" onchange="runCalc()"></select><input type="number" id="calc-qty" placeholder="Qty" class="w-20 border rounded-lg px-2 py-2 text-xs" oninput="runCalc()"></div>
+        <div class="border-t border-slate-700 pt-3 mt-3 flex justify-between text-sm text-slate-300"><span>Production Cost:</span> <span id="calc-cost" class="font-bold text-white">₱0.00</span></div>
         <div class="flex gap-2 items-center mt-2">
           <span class="text-xs text-slate-400">Target Margin:</span>
           <select id="calc-margin" class="border rounded-lg px-2 py-1 text-xs w-24" onchange="runCalc()">
-            <option value="0.30">30%</option>
-            <option value="0.50" selected>50%</option>
-            <option value="0.70">70%</option>
+            <option value="0.30">30%</option><option value="0.50" selected>50%</option><option value="0.70">70%</option>
           </select>
         </div>
-        
         <div class="bg-slate-900 p-3 rounded-lg text-center border border-slate-700">
           <div class="text-xs text-slate-400">Suggested Selling Price</div>
           <div id="calc-price" class="text-2xl font-extrabold text-green-400">₱0.00</div>
@@ -157,86 +89,101 @@
 
     <!-- TAB 3: INVENTORY -->
     <div id="view-inventory" class="tab-content space-y-4">
-      <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
-        <h2 class="text-sm font-bold text-blue-400 mb-2 uppercase">Add New Spool</h2>
-        <div class="grid grid-cols-2 gap-2 mb-2">
-          <input type="text" id="newSpoolId" placeholder="ID (e.g. SPL-10)" class="border rounded-lg px-2 py-2 text-xs">
-          <input type="text" id="newBrand" placeholder="Brand (e.g. eSUN)" class="border rounded-lg px-2 py-2 text-xs">
+      
+      <!-- Spools Section -->
+      <details class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+        <summary class="text-sm font-bold text-blue-400 cursor-pointer outline-none">➕ Add New Spool</summary>
+        <div class="grid grid-cols-2 gap-2 mt-3 mb-2">
+          <input type="text" id="newSpoolId" placeholder="ID (SPL-10)" class="border rounded-lg px-2 py-2 text-xs">
+          <input type="text" id="newBrand" placeholder="Brand (eSUN)" class="border rounded-lg px-2 py-2 text-xs">
           <input type="text" id="newMaterial" placeholder="Material (PLA+)" class="border rounded-lg px-2 py-2 text-xs">
           <input type="text" id="newColor" placeholder="Color" class="border rounded-lg px-2 py-2 text-xs">
           <input type="number" id="newGrams" placeholder="Total (1000)" value="1000" class="border rounded-lg px-2 py-2 text-xs">
-          <input type="number" id="newCost" placeholder="Cost (₱750)" class="border rounded-lg px-2 py-2 text-xs">
+          <input type="number" id="newCost" placeholder="Cost (₱)" class="border rounded-lg px-2 py-2 text-xs">
         </div>
-        <button onclick="addSpool()" id="btn-add-spool" class="w-full py-2 bg-green-600 text-white text-xs font-bold rounded-lg active:scale-95 transition">Save to Inventory</button>
-      </div>
-      <h2 class="text-xs font-bold text-slate-400 pl-2">ACTIVE SPOOLS</h2>
+        <button onclick="addSpool()" id="btn-add-spool" class="w-full py-2 bg-green-600 text-white text-xs font-bold rounded-lg active:scale-95">Save Spool</button>
+      </details>
       <div id="spool-list" class="space-y-2"></div>
+
+      <!-- Hardware Section -->
+      <details class="bg-slate-800 p-3 rounded-xl border border-slate-700 mt-6">
+        <summary class="text-sm font-bold text-blue-400 cursor-pointer outline-none">➕ Add New Hardware</summary>
+        <div class="grid grid-cols-2 gap-2 mt-3 mb-2">
+          <input type="text" id="newHwId" placeholder="ID (HW-05)" class="border rounded-lg px-2 py-2 text-xs">
+          <input type="text" id="newHwCat" placeholder="Category" class="border rounded-lg px-2 py-2 text-xs">
+          <input type="text" id="newHwName" placeholder="Item Name" class="col-span-2 border rounded-lg px-2 py-2 text-xs">
+          <input type="number" id="newHwQty" placeholder="Total Qty" class="border rounded-lg px-2 py-2 text-xs">
+          <input type="number" id="newHwCost" placeholder="Total Cost (₱)" class="border rounded-lg px-2 py-2 text-xs">
+        </div>
+        <button onclick="addHardware()" id="btn-add-hw" class="w-full py-2 bg-green-600 text-white text-xs font-bold rounded-lg active:scale-95">Save Hardware</button>
+      </details>
+      <div id="hw-list" class="space-y-2"></div>
     </div>
 
     <!-- TAB 4: HISTORY -->
     <div id="view-history" class="tab-content space-y-2">
-      <h2 class="text-xs font-bold text-slate-400 pl-2 uppercase">Recent Prints (Tap X to Delete & Restore)</h2>
+      <h2 class="text-xs font-bold text-slate-400 pl-2">Recent Prints (Tap ✖ to Delete & Restore)</h2>
       <div id="history-list" class="space-y-2"></div>
     </div>
 
   </div>
 
-  <!-- Bottom Navigation Bar -->
+  <!-- Bottom Navigation -->
   <div class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 pb-4 text-xs text-slate-500">
     <button onclick="nav('log')" id="nav-log" class="flex-1 py-2 text-blue-400 font-bold">📝 Log</button>
-    <button onclick="nav('calc')" id="nav-calc" class="flex-1 py-2 hover:text-blue-300 transition">🧮 Calc</button>
-    <button onclick="nav('inventory')" id="nav-inventory" class="flex-1 py-2 hover:text-blue-300 transition">📦 Stock</button>
-    <button onclick="nav('history')" id="nav-history" class="flex-1 py-2 hover:text-blue-300 transition">📜 History</button>
+    <button onclick="nav('calc')" id="nav-calc" class="flex-1 py-2 hover:text-blue-300">🧮 Calc</button>
+    <button onclick="nav('inventory')" id="nav-inventory" class="flex-1 py-2 hover:text-blue-300">📦 Stock</button>
+    <button onclick="nav('history')" id="nav-history" class="flex-1 py-2 hover:text-blue-300">📜 History</button>
   </div>
 
   <script>
-    // ⚠️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL:
-    const API_URL = "https://script.google.com/macros/s/AKfycbz66e8L7mXopXnEOj0gRRksd16eAl1LHw4ltx3x2EWY9VpqTgu1jUWtIad5-I7NiNQ/exec"; 
+    // ⚠️ REPLACE THIS URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbxptYE2G8wvkt8haEByTqTdRIw7zGkB35GtURWz4RYT7VJyjM7N7Yzyd5WwiZLvzEiO/exec"; 
     
     let appData = {};
-    let base64Image = null;
-    let imageMimeType = null;
-
-    // Initialize Telegram SDK
+    let base64Image = null, imageMimeType = null;
     const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      tg.setHeaderColor('#0f172a');
-    }
+    if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor('#0f172a'); }
 
     async function init() {
       try {
         const res = await fetch(API_URL);
         appData = await res.json();
         
-        // Populate Dropdowns
         populate("spool", appData.spools, s => `<option value="${s.id}" data-cost="${s.costPerGram}">${s.id} - ${s.color} [${Math.round(s.remaining)}g]</option>`);
         populate("hw", appData.hardware, h => `<option value="${h.id}" data-cost="${h.costPerUnit}">${h.name} [${h.remaining} left]</option>`);
         populate("printer", appData.printers, p => `<option value="${p.id}" data-depr="${p.deprRate}">${p.model}</option>`);
         
-        // Render Inventory List
+        // Render Spools
         document.getElementById("spool-list").innerHTML = appData.spools.map(s => 
-          `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between">
-            <div><div class="font-bold text-sm text-white">${s.id}</div><div class="text-xs text-slate-400">${s.brand} ${s.color}</div></div>
-            <div class="text-right"><div class="font-bold ${s.remaining < 150 ? 'text-red-400' : 'text-green-400'}">${Math.round(s.remaining)}g</div></div>
+          `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+            <div><div class="font-bold text-sm text-white">${s.id}</div><div class="text-[10px] text-slate-400">${s.brand} ${s.color}</div></div>
+            <div class="flex items-center gap-3">
+              <div class="font-bold ${s.remaining < 150 ? 'text-red-400' : 'text-green-400'}">${Math.round(s.remaining)}g</div>
+              <button onclick="deleteInventory('spool', '${s.id}')" class="text-red-400 text-lg active:scale-90">✖</button>
+            </div>
           </div>`).join("");
 
-        // Render History List
+        // Render Hardware
+        document.getElementById("hw-list").innerHTML = appData.hardware.map(h => 
+          `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
+            <div><div class="font-bold text-sm text-white">${h.id}</div><div class="text-[10px] text-slate-400">${h.name}</div></div>
+            <div class="flex items-center gap-3">
+              <div class="font-bold text-blue-400">${h.remaining} left</div>
+              <button onclick="deleteInventory('hardware', '${s.id || h.id}')" class="text-red-400 text-lg active:scale-90">✖</button>
+            </div>
+          </div>`).join("");
+
+        // Render History
         document.getElementById("history-list").innerHTML = appData.recentJobs.map(j => 
           `<div class="bg-slate-800 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-sm text-white">${j.item}</div>
-              <div class="text-[10px] text-slate-400">${new Date(j.date).toLocaleDateString()} • Inflow: ₱${j.inflow}</div>
-            </div>
-            <button onclick="deleteLog('${j.logId}')" class="text-red-400 p-2 text-lg active:scale-90 transition">✖</button>
+            <div><div class="font-bold text-sm text-white">${j.item}</div><div class="text-[10px] text-slate-400">${new Date(j.date).toLocaleDateString()} • Inflow: ₱${j.inflow}</div></div>
+            <button onclick="deleteLog('${j.logId}')" class="text-red-400 p-2 text-lg active:scale-90">✖</button>
           </div>`).join("");
 
         document.getElementById("loading").classList.add("hidden");
         document.getElementById("app-content").classList.remove("hidden");
-      } catch (err) { 
-        document.getElementById("loading").innerText = "Error connecting to Google Sheets.";
-      }
+      } catch (err) { document.getElementById("loading").innerText = "Connection error."; }
     }
 
     function populate(prefix, items, tmpl) {
@@ -245,26 +192,19 @@
       if(document.getElementById(`calc-${prefix}`)) document.getElementById(`calc-${prefix}`).innerHTML = opts;
     }
 
-    // IMAGE UPLOAD HANDLING
     function handleImage(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 800;
           let width = img.width, height = img.height;
-          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+          if (width > 800) { height *= 800 / width; width = 800; }
           canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          base64Image = canvas.toDataURL('image/jpeg', 0.7);
-          imageMimeType = 'image/jpeg';
-          
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          base64Image = canvas.toDataURL('image/jpeg', 0.7); imageMimeType = 'image/jpeg';
           document.getElementById('imagePreview').src = base64Image;
           document.getElementById('imagePreviewContainer').classList.remove('hidden');
         }
@@ -274,108 +214,74 @@
     }
 
     function clearImage() {
-      document.getElementById('receiptInput').value = "";
-      document.getElementById('imagePreviewContainer').classList.add('hidden');
+      document.getElementById('receiptInput').value = ""; document.getElementById('imagePreviewContainer').classList.add('hidden');
       base64Image = null; imageMimeType = null;
     }
 
-    // AUTO-ZERO CASH FOR REJECTS/GIVEAWAYS
     document.getElementById('jobType').addEventListener('change', function(e) {
-      const cashInput = document.getElementById('cashInflow');
-      if (e.target.value !== 'Commercial') cashInput.value = "0";
-      else cashInput.value = "";
+      document.getElementById('cashInflow').value = e.target.value !== 'Commercial' ? "0" : "";
     });
 
-    // CALCULATOR LOGIC
     function runCalc() {
       const sp = document.getElementById("calc-spool").selectedOptions[0];
       const hw = document.getElementById("calc-hw").selectedOptions[0];
       const pr = document.getElementById("calc-printer").selectedOptions[0];
-      
       const g = Number(document.getElementById("calc-g").value) || 0;
       const qty = Number(document.getElementById("calc-qty").value) || 0;
       const hrs = Number(document.getElementById("calc-hours").value) || 0;
       const margin = Number(document.getElementById("calc-margin").value);
 
-      const matCost = sp && sp.value ? g * Number(sp.dataset.cost) : 0;
-      const hwCost = hw && hw.value ? qty * Number(hw.dataset.cost) : 0;
-      const deprCost = pr && pr.value ? hrs * Number(pr.dataset.depr) : 0;
-      const elecCost = hrs * 5; // 5 pesos/hr
-
-      const totalCost = matCost + hwCost + deprCost + elecCost;
-      const sellPrice = totalCost / (1 - margin);
-
-      document.getElementById("calc-cost").innerText = `₱${totalCost.toFixed(2)}`;
-      document.getElementById("calc-price").innerText = `₱${sellPrice.toFixed(2)}`;
+      const total = (sp ? g * Number(sp.dataset.cost) : 0) + (hw ? qty * Number(hw.dataset.cost) : 0) + (pr ? hrs * Number(pr.dataset.depr) : 0) + (hrs * 5);
+      document.getElementById("calc-cost").innerText = `₱${total.toFixed(2)}`;
+      document.getElementById("calc-price").innerText = `₱${(total / (1 - margin)).toFixed(2)}`;
     }
 
-    // TAB NAVIGATION
     function nav(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('[id^="nav-"]').forEach(el => { el.classList.remove('text-blue-400', 'font-bold'); el.classList.add('text-slate-500'); });
       document.getElementById('view-' + tabId).classList.add('active');
-      document.getElementById('nav-' + tabId).classList.remove('text-slate-500');
       document.getElementById('nav-' + tabId).classList.add('text-blue-400', 'font-bold');
     }
 
-    // API ACTIONS
     async function apiPost(payload, btnId) {
       const btn = document.getElementById(btnId);
-      const original = btn.innerText;
-      btn.innerText = "Processing..."; btn.disabled = true; btn.classList.add("opacity-70");
+      const original = btn ? btn.innerText : "";
+      if(btn) { btn.innerText = "Processing..."; btn.disabled = true; btn.classList.add("opacity-70"); }
       try {
         const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await res.json();
-        if(result.status === "success") {
-          tg?.HapticFeedback?.notificationOccurred('success');
-          init(); // Refresh data
-        } else throw new Error(result.message);
-      } catch (err) { 
-        tg?.showAlert ? tg.showAlert(err.message) : alert(err.message); 
-      }
-      btn.innerText = original; btn.disabled = false; btn.classList.remove("opacity-70");
+        if(result.status === "success") { tg?.HapticFeedback?.notificationOccurred('success'); init(); } 
+        else throw new Error(result.message);
+      } catch (err) { tg?.showAlert ? tg.showAlert(err.message) : alert(err.message); }
+      if(btn) { btn.innerText = original; btn.disabled = false; btn.classList.remove("opacity-70"); }
     }
 
     function submitJob() {
-      const itemName = document.getElementById("itemName").value.trim();
-      const spool1 = document.getElementById("spool1").value;
-      if (!itemName || !spool1) {
-        tg?.showAlert ? tg.showAlert("Item Name and Spool 1 are required.") : alert("Item Name and Spool 1 are required.");
-        return;
-      }
-      
+      if (!document.getElementById("itemName").value.trim() || !document.getElementById("spool1").value) return alert("Item Name and Spool 1 required.");
       apiPost({
-        action: "logPrint", itemName: itemName, jobType: document.getElementById("jobType").value,
+        action: "logPrint", itemName: document.getElementById("itemName").value, jobType: document.getElementById("jobType").value,
         printerId: document.getElementById("printerId").value, printHours: document.getElementById("printHours").value, cashInflow: document.getElementById("cashInflow").value,
-        spool1: spool1, g1: document.getElementById("g1").value,
+        spool1: document.getElementById("spool1").value, g1: document.getElementById("g1").value,
         spool2: document.getElementById("spool2").value, g2: document.getElementById("g2").value,
         spool3: document.getElementById("spool3").value, g3: document.getElementById("g3").value,
         hw1: document.getElementById("hw1").value, qty1: document.getElementById("qty1").value,
         hw2: document.getElementById("hw2").value, qty2: document.getElementById("qty2").value,
         receiptBase64: base64Image, receiptMimeType: imageMimeType
       }, "submitBtn");
-      
-      // Clear image after submit
       clearImage();
-      document.getElementById("itemName").value = "";
-      document.getElementById("g1").value = "";
-      document.getElementById("printHours").value = "";
-      document.getElementById("cashInflow").value = "";
+      ["itemName", "g1", "g2", "g3", "qty1", "qty2", "printHours", "cashInflow"].forEach(id => document.getElementById(id).value = "");
     }
 
     function addSpool() {
-      apiPost({
-        action: "addSpool", spoolId: document.getElementById("newSpoolId").value, brand: document.getElementById("newBrand").value,
-        material: document.getElementById("newMaterial").value, color: document.getElementById("newColor").value, 
-        initialGrams: document.getElementById("newGrams").value, cost: document.getElementById("newCost").value
-      }, "btn-add-spool");
+      apiPost({ action: "addSpool", spoolId: document.getElementById("newSpoolId").value, brand: document.getElementById("newBrand").value, material: document.getElementById("newMaterial").value, color: document.getElementById("newColor").value, initialGrams: document.getElementById("newGrams").value, cost: document.getElementById("newCost").value }, "btn-add-spool");
     }
 
-    function deleteLog(logId) {
-      if(confirm("Delete this log and restore inventory?")) {
-        apiPost({ action: "deleteLog", logId: logId }, "nav-history"); // Re-using apiPost wrapper
-      }
+    function addHardware() {
+      apiPost({ action: "addHardware", hwId: document.getElementById("newHwId").value, name: document.getElementById("newHwName").value, category: document.getElementById("newHwCat").value, qty: document.getElementById("newHwQty").value, cost: document.getElementById("newHwCost").value }, "btn-add-hw");
     }
+
+    function deleteLog(logId) { if(confirm("Delete this log and restore inventory?")) apiPost({ action: "deleteLog", logId: logId }, null); }
+    function deleteInventory(type, id) { if(confirm(`Delete this ${type}?`)) apiPost({ action: "deleteInventory", type: type, id: id }, null); }
 
     init();
   </script>
